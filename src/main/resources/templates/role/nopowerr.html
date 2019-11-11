@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../js/jquery-1.9.1.min.js"></script>
+    <script src="/js/bootstrap3/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="/js/bootstrap3/css/bootstrap.css"/>
+    <link rel="stylesheet" href="../js/bootstrap-treeview/bootstrap-treeview.min.css">
+    <script src="../js/bootstrap-treeview/bootstrap-treeview.min.js"></script>
+</head>
+<body>
+<input type="hidden" id="hId" th:value="${id}"/>
+<div id="searchTree"></div>
+<button id="saveId">save</button>
+
+<script>
+    $(function () {
+        initone();
+    });
+
+    function initone(){
+        var a=document.getElementById("hId").value;
+        $.ajax({
+            url: "../tree/queryTree2",
+            data: {id:a},
+            type: "post",
+            dataType: "json",
+            success:function(data){
+                $('#searchTree').treeview({
+                    showCheckbox: true,
+                    data: data,
+                    selectable:true,
+                    state:{
+                        checked:false,
+                    },
+                    onNodeChecked: nodeChecked,
+                    onNodeUnchecked: nodeUnchecked
+                });
+            }
+        })
+    }
+
+    var nodeCheckedSilent = false;
+
+    function nodeChecked(event, node) {
+        if (nodeCheckedSilent) {
+            return;
+        }
+        nodeCheckedSilent = true;
+        checkAllParent(node);
+        checkAllSon(node);
+        nodeCheckedSilent = false;
+    }
+
+    var nodeUncheckedSilent = false;
+
+    function nodeUnchecked(event, node) {
+        if (nodeUncheckedSilent)
+            return;
+        nodeUncheckedSilent = true;
+        uncheckAllParent(node);
+        uncheckAllSon(node);
+        nodeUncheckedSilent = false;
+    }
+
+    //选中全部父节点
+    function checkAllParent(node) {
+        $('#searchTree').treeview('checkNode', node.nodeId, {
+            silent: true
+        });
+        var parentNode = $('#searchTree').treeview('getParent', node.nodeId);
+        if (!("nodeId" in parentNode)) {
+            return;
+        } else {
+            checkAllParent(parentNode);
+        }
+    }
+    //取消全部父节点
+    function uncheckAllParent(node) {
+        $('#searchTree').treeview('uncheckNode', node.nodeId, {
+            silent: true
+        });
+        var siblings = $('#searchTree').treeview('getSiblings', node.nodeId);
+        var parentNode = $('#searchTree').treeview('getParent', node.nodeId);
+        if (!("nodeId" in parentNode)) {
+            return;
+        }
+        var isAllUnchecked = true; //是否全部没选中
+        for (var i in siblings) {
+            if (siblings[i].state.checked) {
+                isAllUnchecked = false;
+                break;
+            }
+        }
+        if (isAllUnchecked) {
+            uncheckAllParent(parentNode);
+        }
+
+    }
+
+    //级联选中所有子节点
+    function checkAllSon(node) {
+        $('#searchTree').treeview('checkNode', node.nodeId, {
+            silent: true
+        });
+        if (node.nodes != null && node.nodes.length > 0) {
+            for (var i in node.nodes) {
+                checkAllSon(node.nodes[i]);
+            }
+        }
+    }
+    //级联取消所有子节点
+    function uncheckAllSon(node) {
+        $('#searchTree').treeview('uncheckNode', node.nodeId, {
+            silent: true
+        });
+        if (node.nodes != null && node.nodes.length > 0) {
+            for (var i in node.nodes) {
+                uncheckAllSon(node.nodes[i]);
+            }
+        }
+    }
+    function inittwo(){
+        $('#searchTree').treeview({
+            showCheckbox: true,
+            data: treeData,
+            onNodeChecked: nodeChecked,
+            onNodeUnchecked: nodeUnchecked
+        });
+    }
+
+    $("#saveId").click(function(){
+        var a=document.getElementById("hId").value;
+        var data = $('#searchTree').treeview('getChecked');
+        var ids="";
+        for (var i=0; i < data.length; i++){
+            ids+=","+data[i].value;
+        }
+        ids=ids.substr(1);
+        $.ajax({
+            url:"../tree/addQx",
+            type:"post",
+            data:{"ids":ids,"id":a},
+            success:function(){
+                location.href="../page/toRoleList";
+            },
+            error:function(){
+                alert("后台报错！！！");
+            }
+        })
+    });
+</script>
+
+</body>
+</html>

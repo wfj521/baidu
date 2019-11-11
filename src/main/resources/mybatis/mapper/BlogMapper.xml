@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blog.mapper.blog.BlogMapper" >
+
+    <select id="queryBlogCount" resultType="int">
+        select count(*) from t_blog b,t_blog_type t where b.type_id=t.id
+            <if test="b.title!=null and b.title!=''">
+                and b.title like '%${b.title}%'
+            </if>
+            <if test="b.startcreateTime!=null and  b.startcreateTime!=''">
+                and b.create_time &gt; #{b.startcreateTime}
+            </if>
+            <if test="b.endcreateTime!=null and b.endcreateTime!=''">
+                and b.create_time &lt; #{b.endcreateTime}
+            </if>
+            <if test="b.startupdateTime!=null and b.startupdateTime!=''">
+                and b.update_time &gt; #{b.startupdateTime}
+            </if>
+            <if test="b.endupdateTime!=null and b.endupdateTime!=''">
+                and b.update_time &gt; #{b.endupdateTime}
+            </if>
+            <if test="b.typeId!=null and b.typeId!=-1">
+                and b.type_id = #{b.typeId}
+            </if>
+    </select>
+
+    <select id="queryBlogList" resultType="com.blog.model.Blog" >
+        select
+        b.id,
+        b.title,
+        b.blog_image as blogImage,
+        b.content,
+        b.top,
+        b.status,
+        b.description,
+        b.keywords,
+        b.comment,
+        b.create_time as createTime,
+        b.update_time as updateTime,
+        b.type_id as typeId,
+        t.type_name as typeName,
+        examine
+         from t_blog b,t_blog_type t where b.type_id=t.id
+            <if test="b.title!=null and b.title!=''">
+                and b.title like '%${b.title}%'
+            </if>
+            <if test="b.startcreateTime!=null and  b.startcreateTime!=''">
+                and b.create_time &gt; #{b.startcreateTime}
+            </if>
+            <if test="b.endcreateTime!=null and b.endcreateTime!=''">
+                and b.create_time &lt; #{b.endcreateTime}
+            </if>
+            <if test="b.startupdateTime!=null and b.startupdateTime!=''">
+                and b.update_time &gt; #{b.startupdateTime}
+            </if>
+            <if test="b.endupdateTime!=null and b.endupdateTime!=''">
+                and b.update_time &gt; #{b.endupdateTime}
+            </if>
+            <if test="b.typeId!=null and b.typeId!=-1">
+                and b.type_id = #{b.typeId}
+            </if>
+            order by b.top,b.create_time desc
+         limit #{page},#{rows}
+    </select>
+
+    <insert id="saveBlog" parameterType="com.blog.model.Blog">
+        insert into t_blog(
+        title,
+        blog_image,
+        content,
+        top,
+        status,
+        description,
+        keywords,
+        comment,
+        create_time,
+        update_time,
+        type_id,
+        support,
+        examine
+        ) values (#{title},#{blogImage},#{content},#{top},#{status},#{description},#{keywords},#{comment},#{createTime},#{updateTime},#{typeId},0,1)
+    </insert>
+
+    <delete id="delBlogById" parameterType="string">
+        delete from t_blog where id in
+        <foreach collection="array" item="arr" index="no" open="("
+                 separator="," close=")">
+            #{arr}
+        </foreach>
+
+    </delete>
+
+    <select id="queryBlogById" parameterType="int" resultType="com.blog.model.Blog">
+        select
+         id,
+        title,
+        blog_image as blogImage,
+        content,
+        top,
+        status,
+        description,
+        keywords,
+        comment,
+        update_time as updateTime,
+        type_id as typeId
+         from t_blog where id=#{id}
+    </select>
+
+    <update id="blogMapper" parameterType="com.blog.model.Blog">
+        update t_blog set
+         title=#{title},
+        blog_image=#{blogImage},
+        content=#{content},
+        top=#{top},
+        status=#{status},
+        description=#{description},
+        comment=#{comment},
+        update_time=#{updateTime},
+        type_id=#{typeId}
+        where id=#{id}
+    </update>
+
+    <update id="updateBlogTopById" parameterType="com.blog.model.Blog">
+    update t_blog set top=#{top}, update_time=#{updateTime} where id=#{id}
+    </update>
+
+    <select id="getTypeBlogStatusList" resultType="com.blog.model.Type">
+        select id,type_name as typeName from t_blog_type
+    </select>
+
+    <update id="updateBlogComment" parameterType="com.blog.model.Blog">
+        update t_blog set comment=#{comment},update_time=#{updateTime} where id=#{id}
+    </update>
+
+    <select id="queryBcCount" parameterType="int" resultType="int">
+        select count(1) from t_blog b,t_blog_comment bc,t_comment c
+        where b.id=bc.blog_id and bc.comment_id=c.id and  b.id=#{id}
+    </select>
+
+    <select id="queryCommentById" resultType="com.blog.model.Comment">
+         select tc.commentator,tc.content,tc.support,tc.oppose,tc.create_time as createTime
+          from t_blog tb,t_blog_comment tbc,t_comment tc
+        where tbc.blog_id = tb.id and  tbc.comment_id= tc.id and tb.id = #{id}
+    </select>
+
+    <select id="queryTypeCount" resultType="com.blog.model.TypeBlog">
+        select  t.type_name as name,count(*) as bis from t_blog b,t_blog_type t where b.type_id=t.id group by t.type_name
+    </select>
+
+    <select id="query2" resultType="map">
+     select   year(b.create_time) as '日期' from t_blog b,t_blog_type t WHERE b.type_id=t.id and t.id=1 group by  year(b.create_time)
+    </select>
+    <select id="query1" resultType="map">
+      select   year(b.create_time) as '日期', count(t.id) as '数量',t.type_name as '类型' from t_blog b,t_blog_type t  WHERE b.type_id=t.id and t.id=1 group by year(b.create_time)
+
+    </select>
+    <select id="query22" resultType="map">
+      select   year(b.create_time) as '日期', count(t.id) as '数量',t.type_name as '类型' from t_blog b,t_blog_type t  WHERE b.type_id=t.id and t.id=2 group by year(b.create_time)
+
+    </select>
+    <select id="query3" resultType="map">
+      select   year(b.create_time) as '日期', count(t.id) as '数量',t.type_name as '类型' from t_blog b,t_blog_type t  WHERE b.type_id=t.id and t.id=3 group by year(b.create_time)
+
+    </select>
+    <select id="query4" resultType="map">
+      select   year(b.create_time) as '日期', count(t.id) as '数量',t.type_name as '类型' from t_blog b,t_blog_type t  WHERE b.type_id=t.id and t.id=4 group by year(b.create_time)
+
+    </select>
+    <select id="query5" resultType="map">
+      select   year(b.create_time) as '日期', count(t.id) as '数量',t.type_name as '类型' from t_blog b,t_blog_type t  WHERE b.type_id=t.id and t.id=5 group by year(b.create_time)
+
+    </select>
+
+
+    <select id="queryExamineCount" resultType="int" >
+        select  count(1)
+        from t_blog b,t_blog_type t where b.type_id=t.id
+		and b.examine=1
+    </select>
+
+    <select id="queryBlogExamine" resultType="com.blog.model.Blog" >
+        select       b.id,
+        b.title,
+        b.blog_image as blogImage,
+        b.content,
+        b.top,
+        b.status,
+        b.description,
+        b.keywords,
+        b.comment,
+        b.create_time as createTime,
+        b.update_time as updateTime,
+        b.type_id as typeId,
+        t.type_name as typeName,
+		b.examine
+        from t_blog b,t_blog_type t where b.type_id=t.id
+		and b.examine=1
+        order by b.top desc
+        limit #{page},#{rows}
+    </select>
+
+    <update id="updateBlogExamine" >
+        update t_blog set examine=#{flag}
+        where id=#{id}
+    </update>
+</mapper>
+

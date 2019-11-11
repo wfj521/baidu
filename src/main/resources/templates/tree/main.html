@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns="http://www.w3.org/1999/xhtml"
+                 xmlns:shiro="http://www.pollix.at/thymeleaf/shiro"
+                 xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../js/jquery-1.9.1.min.js"></script>
+    <script src="../js/bootstrap3/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="../js/bootstrap3/css/bootstrap.css"/>
+    <link rel="stylesheet" href="../js/bootstrap-treeview/bootstrap-treeview.min.css">
+    <script src="../js/bootstrap-treeview/bootstrap-treeview.min.js"></script>
+    <link rel="stylesheet" href="../js/bootStrap-addTabs/bootstrap.addtabs.css">
+    <script src="../js/bootStrap-addTabs/bootstrap.addtabs.min.js"></script>
+    <script src="../echarts/echarts.js"></script>
+
+</head>
+<body style="background: url(../img/ef.jpg) no-repeat center center fixed;background-size:100%" >
+
+        <div  style="height:150px;margin-top:0;">
+            <div style="margin-left:50px;margin-top:0;height:50px">
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                <p id="imgPId" style="display: none"><shiro:principal property='userImage'/></p>
+                <img width="140px" height="110px" id="imageId"/>
+               <!-- <img width="50px" height="50px" src=''/>
+                src="'+<shiro:principal property="userImage"/>+'"/>-->
+                <font  size="7"><shiro:principal property="userName" /></font>
+                <a href="../logout" class="btn btn-info ">注销</a><br>
+
+                <br><br>
+            </div>
+            <div style="margin-top:0;margin-left:800px;height:50px">
+                <marquee width="1000" onMouseOver="this.stop()" onMouseOut="this.start()" behavior="scroll" scrollamount="10">
+                <font size="4" color="#1e90ff">今日天气：<span id="type"></span>，最<span id="high"></span>，最<span id="low"></span>。温馨提示：<span id="notice"></span></font>
+                </marquee>
+            </div>
+        <div class="row">
+            <!--树-->
+            <div class="col-xs-2" style="margin-top:45px;">
+                <div id="myTree" ></div>
+            </div>
+            <!--选项卡-->
+            <div class="col-xs-10">
+                <div id="myTabs">
+                    <!-- 新选项卡 -->
+                    <ul class="nav nav-tabs" id="tablist">
+                        <li role="presentation" class="active">
+                            <a href="#home" role="tab" data-toggle="tab">欢迎</a>
+                        </li>
+                    </ul>
+                    <!-- 选项卡下内容 -->
+                    <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane active" id="home">
+                             <div id="divid"  style="width: 600px; height: 600px; margin-left: 20px; margin-top: 20px;float: left"></div>
+                            <div id="main" style="width: 600px;height:500px;margin-top: 50px;float: left;margin-left: 20px;float: left"></div>
+                            <div id="app" style="width: 600px;height:500px;margin-top: 50px;float: left;margin-left: 20px;float: left"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+<script  type="text/javascript">
+                var json = [];
+                var datas = [];
+                $(function() {
+                    //ajax调用
+                    ajaxGetData();
+                });
+
+                function ajaxGetData() {
+                    $.ajax({
+                        url : "/blog/getBaseDataData",
+                        success : function(data) {
+                            var jsonObject = eval("(" + data + ")");
+                            for (var i = 0; i < jsonObject.length; i++) {
+                                json.push({
+                                    value : jsonObject[i].bis,
+                                    name : jsonObject[i].name
+                                });
+                                datas.push(jsonObject[i].name);
+                            }
+                            printPie();
+                        }
+                    });
+                }
+                function printPie() {
+                    var myecharts = echarts.init(document.getElementById("divid"));
+                    option = {
+                        title : {
+                            /*text : '文章',
+                            subtext : '',
+                            x : 'center'*/
+                        },
+                        tooltip : {
+                            trigger : 'item',
+                            formatter : "{a} <br/>{b} : {c} ({d}%)"
+                        },
+                        legend : {
+                            orient : 'vertical',
+                            left : 'right',
+                            data : datas.baseDataCategory
+                        },
+                        series : [ {
+                            name : '值域占比',
+                            type : 'pie',
+                            data : json,
+                            radius:'45%'
+                            /* [ {
+                            value : 335,
+                            name : 'CV'
+                        }, {
+                            value : 310,
+                            name : '非CV'
+                        }, {
+                            value : 234,
+                            name : 'ICD-10'
+                        }, {
+                            value : 135,
+                            name : 'GB'
+                        } ] */,
+                            itemStyle : {
+                                /*emphasis : {
+                                    shadowBlur : 10,
+                                    shadowOffsetX : 0,
+                                    shadowColor : 'rgba(0, 0, 0, 0.5)'
+                                },*/
+                                normal : {
+                                    label : {
+                                        show : true,
+                                        formatter : '{b}-{d}%',
+                                        textStyle : {
+                                            fontWeight : 200,
+                                            fontSize : 20
+                                            //文字的字体大小
+                                        },
+                                    },
+                                    /*lableLine : {
+                                        show : true
+                                    }*/
+                                }
+                            }
+                        } ]
+                    };
+
+                    myecharts.setOption(option);
+                }
+            </script>
+            <script>
+                $(function () {
+                    var classes=[];
+                    var uiui =[];
+                    var cece =[];
+                    var javajava =[];
+                    var spsp =[];
+                    var rere =[];
+                    $.ajax({
+                        url:'/blog/query',
+                        type:'post',
+                        dataType:'json',
+                        async:false,
+                        success:function(data){
+                            classes=data.classse;
+                            uiui=data.uiui;
+                            cece=data.cece;
+                            javajava=data.javajava;
+                            spsp=data.spsp;
+                            rere=data.rere;
+
+                        }
+                    });
+
+
+                    // 基于准备好的dom，初始化echarts实例
+                    var myChart = echarts.init(document.getElementById('main'));
+                    var posList = [
+                        'left', 'right', 'top', 'bottom',
+                        'inside',
+                        'insideTop', 'insideLeft', 'insideRight', 'insideBottom',
+                        'insideTopLeft', 'insideTopRight', 'insideBottomLeft', 'insideBottomRight'
+                    ];
+
+                    app.configParameters = {
+                        rotate: {
+                            min: -90,
+                            max: 90
+                        },
+                        align: {
+                            options: {
+                                left: 'left',
+                                center: 'center',
+                                right: 'right'
+                            }
+                        },
+                        verticalAlign: {
+                            options: {
+                                top: 'top',
+                                middle: 'middle',
+                                bottom: 'bottom'
+                            }
+                        },
+                        position: {
+                            options: echarts.util.reduce(posList, function (map, pos) {
+                                map[pos] = pos;
+                                return map;
+                            }, {})
+                        },
+                        distance: {
+                            min: 0,
+                            max: 100
+                        }
+                    };
+
+                    app.config = {
+                        rotate: 90,
+                        align: 'left',
+                        verticalAlign: 'middle',
+                        position: 'insideBottom',
+                        distance: 15,
+                        onChange: function () {
+                            var labelOption = {
+                                normal: {
+                                    rotate: app.config.rotate,
+                                    align: app.config.align,
+                                    verticalAlign: app.config.verticalAlign,
+                                    position: app.config.position,
+                                    distance: app.config.distance
+                                }
+                            };
+                            myChart.setOption({
+                                series: [{
+                                    label: labelOption
+                                }, {
+                                    label: labelOption
+                                }, {
+                                    label: labelOption
+                                }, {
+                                    label: labelOption
+                                }]
+                            });
+                        }
+                    };
+
+
+                    var labelOption = {
+                        normal: {
+                            show: true,
+                            position: app.config.position,
+                            distance: app.config.distance,
+                            align: app.config.align,
+                            verticalAlign: app.config.verticalAlign,
+                            rotate: app.config.rotate,
+                            formatter: '{c}  {name|{a}}',
+                            fontSize: 20,
+                            rich: {
+                                name: {
+                                    textBorderColor: '#fff'
+                                }
+                            }
+                        }
+                    };
+
+                    var option = {
+                        color: ['#003366', '#006699', '#4cabce', '#e5323e'],
+                        tooltip: {
+                            trigger: 'axis',
+                            axisPointer: {
+                                type: 'shadow'
+                            }
+                        },
+                        legend: {
+                            data: ['2016', '2017', '2018', '2019']
+                        },
+                        toolbox: {
+                            show: true,
+                            orient: 'vertical',
+                            left: 'right',
+                            top: 'center',
+                            feature: {
+                                mark: {show: true},
+                                dataView: {show: true, readOnly: false},
+                                magicType: {show: true, type: ['line', 'bar', 'stack', 'tiled']},
+                                restore: {show: true},
+                                saveAsImage: {show: true}
+                            }
+                        },
+                        calculable: true,
+                        xAxis: [
+                            {
+                                type: 'category',
+                                axisTick: {show: false},
+                                data: classes
+                            }
+                        ],
+                        yAxis: [
+                            {
+                                type: 'value'
+                            }
+                        ],
+                        border:1,
+                        series: [
+
+                            {
+                                name: "UI",
+                                type: 'bar',
+                                barGap: 0,
+                                label: labelOption,
+                                data: uiui
+                            },
+                            {
+                                name: "java",
+                                type: 'bar',
+                                barGap: 0,
+                                label: labelOption,
+                                data: javajava
+                            },
+                            {
+                                name: "测试",
+                                type: 'bar',
+                                barGap: 0,
+                                label: labelOption,
+                                data: cece
+                            },
+                            {
+                                name: "springboot",
+                                type: 'bar',
+                                barGap: 0,
+                                label: labelOption,
+                                data: spsp
+                            },
+                            {
+                                name: "redis",
+                                type: 'bar',
+                                barGap: 0,
+                                label: labelOption,
+                                data: rere
+                            },
+
+                        ]
+                    };
+                    // 使用刚指定的配置项和数据显示图表。
+                    myChart.setOption(option);
+                })
+
+
+            </script>
+</body>
+<script  type="text/javascript">
+    $(function(){
+        initImg();
+        initWeather();
+        initTree();
+    });
+
+    function initImg(){
+
+        var img1 = $("#imgPId").html();
+        $("#imageId").attr("src",img1);
+    }
+
+    function initTree(){
+        $.ajax({
+            url: "../user/queryTree",
+            type: "post",
+            dataType: "json",
+            success: function(data){
+                $('#myTree').treeview({
+                    data:data,
+                    color:'fffffb',
+                    backColor:'#90d7ec',
+                    borderColor:'#fdb933',
+                    onhoverColor: "#f391a9",
+                    showBorder: true,
+                    onNodeSelected:function(event, node) {
+                        $.addtabs({iframeHeight: 550});
+                        $.addtabs.add({
+                            id:node.id,
+                            title:node.text,
+                            url:node.href
+                        });
+                    }
+                })
+            }
+        });
+    }
+
+    function initWeather(){
+        $.ajax({
+            url: "../user/queryWeather",
+            type: "post",
+            dataType: "json",
+            success: function(data){
+               // data=("(+eval+)");
+                var low = data.low;
+                var high = data.high;
+                var notice = data.notice;
+                var type = data.type;
+                $("#low").html(low);
+                $("#high").html(high);
+                $("#notice").html(notice);
+                $("#type").html(type);
+
+            }
+        });
+    }
+</script>
+
+</html>

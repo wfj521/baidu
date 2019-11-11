@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../js/jquery-1.9.1.min.js"></script>
+    <script src="../js/bootstrap3/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="../js/bootstrap3/css/bootstrap.css"/>
+
+    <!-- bootstrap日期插件 -->
+    <script src="../js/bootstrap-datetimepicker/js/bootstrap-datetimepicker.js"></script>
+    <script src="../js/bootstrap-datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js"></script>
+    <link rel="stylesheet" href="../js/bootstrap-datetimepicker/css/bootstrap-datetimepicker.css">
+
+    <!-- ueditor富文本编辑器 -->
+    <script type="text/javascript" charset="utf-8" src="../js/ueditor/ueditor.config.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../js/ueditor/ueditor.all.min.js"> </script>
+    <!--建议手动加在语言，避免在ie下有时因为加载语言失败导致编辑器加载失败-->
+    <!--这里加载的语言文件会覆盖你在配置项目里添加的语言类型，比如你在配置项目里配置的是英文，这里加载的中文，那最后就是中文-->
+    <script type="text/javascript" charset="utf-8" src="../js/ueditor/lang/zh-cn/zh-cn.js"></script>
+
+    <script src="../js/bootstrap-fileinput/js/fileinput.js"></script>
+    <script src="../js/bootstrap-fileinput/js/locales/zh.js"></script>
+    <link rel="stylesheet" href="../js/bootstrap-fileinput/css/fileinput.css">
+</head>
+<body>
+
+<form class="form-horizontal" id="blogUpdateFormId">
+    <input type="hidden"  name="id" th:value="${blog.id}" />
+    <input type="hidden"  name="top" th:value="${blog.top}" />
+    <input type="hidden"  name="typeId" th:value="${blog.typeId}" />
+    <div class="form-group">
+        <label class="col-sm-2 control-label">文章标题</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" name="title"  th:value="${blog.title}" placeholder="title">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">文章图像</label>
+            <div class="col-sm-3" style="width: 600px">
+                <input type="file" class="projectfile" id="fileinput" name="file" >
+                <input type="text" style="display: none;" id="hideImg" name="blogImage" th:value="${blog.blogImage}">
+            </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">文章内容</label>
+        <div class="col-sm-10">
+            <input type="hidden" name="content" id="contentId" th:value="${blog.content}"/><br>
+            <script id="editor" type="text/plain" style="width:1000px;height:200px;"  ></script>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">文章状态</label>
+        <div class="col-sm-10">
+            <input type="radio" class="bg-danger" name="status" th:checked="${blog.status==1?'true':'false'}" value="1">好
+            <input type="radio" class="bg-danger" name="status"  th:checked="${blog.status==2?'true':'false'}" value="2">差
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">文章简介</label>
+        <div class="col-sm-10">
+            <textarea rows="5" class="form-control" name="description" th:text="${blog.description}"></textarea>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="typeId" class="col-sm-2 control-label">类型</label>
+        <div class="col-sm-10">
+            <select name="typeId"  id="typeId" class="form-control">
+                <option value="-1">--请选择--</option>
+                <option th:each="type : ${typeList}" th:value="${type.id}" th:selected="${type.id} == ${blog.typeId}">
+                    <span th:text="${type.typeName}"></span>
+                </option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">是否开启评论</label>
+        <div class="col-sm-10">
+            <input type="radio" class="bg-danger" name="comment" th:checked="${blog.comment==1?'true':'false'}" value="1">开启
+            <input type="radio" class="bg-danger" name="comment"  th:checked="${blog.comment==2?'true':'false'}" value="2">关闭
+        </div>
+    </div>
+</form>
+<div >
+    <button type="button" onclick="saveBlog()" class="btn btn-info glyphicon glyphicon-plus">添加</button>
+    <button type="button" onclick="queryBlog()" class="btn btn-danger glyphicon glyphicon-minus">返回</button>
+</div>
+<script type="text/javascript">
+
+    //实例化编辑器
+    //建议使用工厂方法getEditor创建和引用编辑器实例，如果在某个闭包下引用该编辑器，直接调用UE.getEditor('editor')就能拿到相关的实例
+    var ue = UE.getEditor('editor');
+    //获取后台传过来的filmVo对象的filmDesc属性的内容(html字符串内容(数据库查到的))
+    var filmDesc = $("#contentId").val();
+    //这个监听器是亮点
+    ue.addListener('ready',function () {
+        ue.execCommand('insertHtml',filmDesc);
+    });
+
+
+    function queryBlog(){
+        location.href="../blog/toBlog";
+    }
+    function saveBlog(){
+        $("#contentId").val(ue.getContent());
+        $.ajax({
+            url: "/blog/saveBlog",
+            type: "post",
+            data: $("#blogUpdateFormId").serialize(),
+            dataType: "text",
+            success:function(data){
+                alert(data);
+                location.href="../blog/toBlog";
+            }
+        })
+    }
+    $('.date').datetimepicker({
+        language: 'zh-CN',//显示中文
+//	  format: 'yyyy-mm-dd hh:ii:ss',//显示格式
+        format: 'yyyy-mm-dd',//显示格式
+        minView: "month",//设置只显示到月份
+        initialDate: new Date(),//初始化当前日期
+        autoclose: true,//选中自动关闭
+        todayBtn: true//显示今日按钮
+    });
+    $(function () {
+        var imgFile =  $("#hideImg").val();
+        editFileInput(imgFile);
+    })
+   /* function initFileInput(){
+        $("#fileinput").fileinput({
+            language: 'zh', //设置语言
+            uploadUrl: '../blog/uploadImg', //上传的地址
+            allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+            showUpload: true, //是否显示上传按钮
+            showCaption: false,//是否显示标题
+            browseClass: "btn btn-primary", //按钮样式
+            maxFileCount: 1, //表示允许同时上传的最大文件个数
+            enctype: 'multipart/form-data',
+            validateInitialCount:true,
+            previewFileIcon: "<i class='glyphicon glyphicon-king'></i>",
+            msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+
+        }).on('fileuploaded', function(event, data, previewId, index) {
+            alert(data.response)
+            var imgval = data.response;
+            $('#hideImg').val(imgval);
+        });
+    }*/
+    //回显图片
+    function editFileInput(url){
+        $('#fileinput').fileinput({
+            initialPreview:url,//回显地址url
+            initialPreviewConfig: [
+                {key: 1, showDelete: false}
+            ],
+            initialPreviewAsData: true,
+            language: 'zh', //设置语言
+            uploadUrl: '../blog/uploadImg', //上传的地址
+            allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+            showUpload: true, //是否显示上传按钮
+            showCaption: false,//是否显示标题
+            browseClass: "btn btn-primary", //按钮样式
+            //dropZoneEnabled: false,//是否显示拖拽区域
+            //minImageWidth: 50, //图片的最小宽度
+            //minImageHeight: 50,//图片的最小高度
+            //maxImageWidth: 1000,//图片的最大宽度
+            //maxImageHeight: 1000,//图片的最大高度
+            //maxFileSize: 0,//单位为kb，如果为0表示不限制文件大小
+            //minFileCount: 0,
+            maxFileCount: 1, //表示允许同时上传的最大文件个数
+            enctype: 'multipart/form-data',
+            validateInitialCount:true,
+            previewFileIcon: "<i class='glyphicon glyphicon-king'></i>",
+            msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+
+        }).on('fileuploaded', function(event, data, previewId, index) {
+
+            alert(data.response)
+            var imgval = data.response;
+            $('#hideImg').val(imgval);
+        });
+    }
+</script>
+</body>
+</html>

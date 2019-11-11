@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blog.mapper.role.RoleMapper" >
+    <select id="findRoleCount" resultType="int">
+        select count(1) from sys_role <include refid="roleSql"></include>
+    </select>
+
+    <select id="queryRole" resultType="role">
+        select * from sys_role <include refid="roleSql"></include> limit #{start},#{end}
+    </select>
+
+    <sql id="roleSql">
+      <where>
+        <if test="role.name!=null  and  role.name!=''">
+             name like '%${role.name}%'
+        </if>
+      </where>
+    </sql>
+</mapper>

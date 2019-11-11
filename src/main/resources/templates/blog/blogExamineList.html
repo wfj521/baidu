@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../js/jquery-1.9.1.min.js"></script>
+    <script src="../js/bootstrap3/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="../js/bootstrap3/css/bootstrap.css"/>
+    <link rel="stylesheet" href="../js/bootstrap-table/bootstrap-table.css" />
+    <script src="../js/bootstrap-table/bootstrap-table.js"></script>
+    <script src="../js/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+    <script src="../js/bootstrap-bootbox/bootbox.js"></script>
+</head>
+<body>
+<table class="table table-hover bg-info text-white "  id="myTable" ></table>
+
+<script>
+    $(function(){
+        initTable();
+    })
+
+    function initTable(){
+        //列表展示
+        $('#myTable').bootstrapTable({
+            toolbar:'#toolbar',
+            url:'../blog/blogExamine',//获取数据地址
+            pagination:true, //是否展示分页
+            pageList:[5, 10, 20, 50],//分页组件
+            pageNumber:1,
+            pageSize:5,//默认每页条数
+            //search:true,//是否显示搜索框
+            //searchText:'试试',//初始化搜索文字
+            showColumns:false,//是否显示 内容列下拉框
+            showToggle:false,//是否显示 切换试图（table/card）按钮
+            showPaginationSwitch:false,//是否显示 数据条数选择框
+            showRefresh:false,//是否显示刷新按钮
+            detailView:false,//设置为 true 可以显示详细页面模式。
+            showFooter:false,//是否显示列脚
+            clickToSelect: true, //是否启用点击选中行
+            sidePagination:'server',//分页方式：client客户端分页，server服务端分页（*
+            striped:true,
+            queryParams:function(){
+                return{
+                    page:this.pageNumber,
+                    rows:this.pageSize,
+                };
+            },
+            columns:[
+                {field:'111',title:'11',checkbox:true},
+                {field:'id',title:'文章id'},
+                {field:'title',title:'文章标题'},
+                {field:'blogImage',title:'文章图像',formatter:function(value,row,index){
+                        return '<img width="50px" height="50px" src="'+value+'"/>'
+                    }},
+                {field:'content',title:'文章内容',formatter:function(value,row,index){
+                        return  value.substr(0,5)+"...";
+                    }},
+                {field:'status',title:'状态',formatter:function(value,row,index){
+                        if (value==1){
+                            return "好";
+                        }
+                        if (value==2){
+                            return "差";
+                        }
+                    }},
+                {field:'typeId',title:'类型',formatter:function(value,row,index){
+                        return row.typeName;
+                    }},
+                {field:'createTime',title:'创建时间'},
+                {field:'updateTime',title:'更新时间'},
+                {field:'123',title:'审核',formatter:function(value,row,index){
+                        return '<a href="/blog/updateBlogExamine?id='+row.id+'&flag=2" class=\'btn btn-success \'>通过</a>';
+                    }},
+                {field:'123',title:'  ',formatter:function(value,row,index){
+                        return '<a href="/blog/updateBlogExamine?id='+row.id+'&flag=3" class=\'btn btn-danger \'>不能发布</a>';
+                    }}
+            ]
+        })
+    }
+
+    function updateExamine(id,flag){
+        $.ajax({
+            url:"../blog/updateBlogExamine?id="+id+"&flag="+flag,
+            type:"post",
+            dataType:"json",
+            success:function (data) {
+                alert(data)
+                initTable();
+            }
+        })
+    }
+
+</script>
+</body>
+</html>
